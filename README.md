@@ -43,9 +43,16 @@ import shared_memory as shm
 import xarray as xr
 # 定义一个模板数据
 template_data = xr.DataArray(0, dims=["x", "y"], coords={"x": [1, 2, 3], "y": ["a", "b", "c"]})
-layout = shm.DataArrayLayout(template_data)
+layout = shm.DataArrayLayout.from_data(template_data)
 array = shm.create("array2", layout)
 
 # 读取创建的array
 same_array = shm.load("array2")
+```
+
+### 删除已经存在的共享内存
+
+```python
+import shared_memory as shm
+shm.unlink("name")
 ```

@@ -5,11 +5,10 @@ import struct
 from typing import Optional, Type
 
 
-__all__ = ["create", "load", "get_layout"]
+__all__ = ["create", "load"]
 
 
 def create(name, layout: Layout):
-    unlink(name)
     shm = SharedMemory.create(name, layout.size())
     mem = memoryview(shm)
     layout.dump(mem)
@@ -25,19 +24,5 @@ def load(name, layout: Optional[Type[Layout]]=None):
 def load_mem(mem: memoryview, layout: Optional[Type[Layout]]=None):
     if layout is None:
         sign = struct.unpack_from("c", mem, 0)[0]
-        layout = get_layout(sign)
+        layout = Layout.get_layout_cls(sign)
     return layout.load(mem)
-
-
-def get_layout(sign):
-    from .ndarray_layout import NdArrayLayout
-    from .pickle_layout import PickleLayout
-    from .struct_layout import StructLayout
-    from .data_array_layout import DataArrayLayout
-    layouts = {
-        b"a": NdArrayLayout,
-        b"p": PickleLayout,
-        b"s": StructLayout,
-        b"x": DataArrayLayout,
-    }
-    return layouts[sign]

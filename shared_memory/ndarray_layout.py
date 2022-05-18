@@ -38,3 +38,9 @@ class NdArrayLayout(Layout):
         shape = struct.unpack_from(f"{dims}i", mem, 8)
         buffer = mem[align(dtype.alignment, struct.calcsize(f"cci{dims}i")):]
         return np.ndarray(shape, dtype, buffer)
+
+    @classmethod
+    def from_data(cls, array: np.ndarray):
+        dtype = array.dtype
+        shape = array.shape
+        return cls(dtype, shape)

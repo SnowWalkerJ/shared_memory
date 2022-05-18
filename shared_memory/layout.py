@@ -4,6 +4,8 @@ import inspect
 
 
 class Layout(abc.ABC):
+    __registered_layouts = {}
+
     @abc.abstractmethod
     def size(self) -> int:
         raise NotImplementedError
@@ -16,6 +18,18 @@ class Layout(abc.ABC):
     @abc.abstractmethod
     def load(cls, mem: memoryview):
         raise NotImplementedError
+
+    @classmethod
+    def get_layout_cls(cls, key):
+        return cls.__registered_layouts[key]
+
+    @classmethod
+    def _set_layout_cls(cls, key, layout_cls):
+        cls.__registered_layouts[key] = layout_cls
+
+    def __init_subclass__(cls, **kwargs):
+        if hasattr(cls, "sign"):
+            Layout._set_layout_cls(cls.sign, cls)
 
 
 def align(alignment, target=None):

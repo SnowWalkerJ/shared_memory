@@ -13,4 +13,8 @@ ext_modules = [
     extension
 ]
 
-setup(name="shared_memory", packages=["shared_memory"], ext_package="shared_memory", ext_modules=ext_modules)
+setup(name="shared_memory",
+      packages=["shared_memory"],
+      ext_package="shared_memory",
+      ext_modules=ext_modules,
+)

@@ -8,14 +8,18 @@ import xarray as xr
 class DataArrayLayout(StructLayout):
     sign = b"x"
 
-    def __init__(self, array: xr.DataArray):
+    def __init__(self, dims, coords, dtype, shape):
         super().__init__({
-            "dims": PickleLayout(array.dims),
-            "coords": PickleLayout(array.coords),
-            "data": NdArrayLayout(array.dtype, array.shape)
+            "dims": PickleLayout(dims),
+            "coords": PickleLayout(coords),
+            "data": NdArrayLayout(dtype, shape)
         })
 
     @classmethod
     def load(cls, mem: memoryview):
         data = super().load(mem)
         return xr.DataArray(data["data"], dims=data["dims"], coords=data["coords"])
+
+    @classmethod
+    def from_data(cls, array: xr.DataArray):
+        return cls(array.dims, array.coords, array.dtype, array.shape)
