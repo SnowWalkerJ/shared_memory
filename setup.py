@@ -6,7 +6,6 @@ extension = Pybind11Extension(
     "shared_memory",
     sorted(glob("src/*.cpp")),  # Sort source files for reproducibility
     cxx_std=14,
-    include_dirs=["/Users/snowwalkerj/opt/anaconda3/include"],
 )
 
 ext_modules = [
