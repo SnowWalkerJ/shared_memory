@@ -25,6 +25,8 @@ class Layout(abc.ABC):
 
     @classmethod
     def _set_layout_cls(cls, key, layout_cls):
+        if key in cls.__registered_layouts:
+            raise ValueError(f"Layout of sign `{key}` already registered")
         cls.__registered_layouts[key] = layout_cls
 
     def __init_subclass__(cls, **kwargs):
