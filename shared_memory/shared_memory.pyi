@@ -9,3 +9,7 @@ class SharedMemory:
     @classmethod
     def open(cls, name: str, read_only: bool=False):
         pass
+
+
+def unlink(name: str):
+    pass
