@@ -1,6 +1,3 @@
-import itertools
-
-from .shared_memory import SharedMemory
 from .layout import Layout, align
 
 import functools
@@ -14,7 +11,7 @@ import numpy as np
 class NdArrayLayout(Layout):
     sign = b"a"
 
-    def __init__(self, dtype: np.dtype, shape: Tuple[int]):
+    def __init__(self, dtype: np.dtype, shape: Tuple[int, ...]):
         self.dtype = np.dtype(dtype)
         self.shape = shape
 

@@ -5,11 +5,11 @@
 ## 解决痛点
 
 - Python自带的SharedMemory会在创建它的进程结束后强制删除共享内存，这在有些场景下是不好的。我们的SharedMemory不会主动为你删除内存，需要手动删除
-- 封装了`numpy.ndarray`和`xarray.DataArray`的共享内存版本，方便在进程间共享这些高级数据结构
-
-## TODO
-
-- 封装pandas结构
+- 封装了一些数据结构的的共享内存版本，方便在进程间共享这些高级数据结构
+  - numpy.ndarray
+  - pandas.Series
+  - pandas.DataFrame
+  - xarray.DataArray
 
 ## 用法
 
@@ -34,6 +34,28 @@ array = shm.create("array", layout)
 
 # 读取创建的array
 same_array = shm.load("array")
+```
+
+### 创建一个基于共享内存的`pandas.Series`
+
+```python
+import shared_memory as shm
+layout = shm.SeriesLayout(dtype="float32", index=["a", "b", "c"])
+series = shm.create("series", layout)
+
+# 读取创建的series
+same_series = shm.load("series")
+```
+
+### 创建一个基于共享内存的`pandas.DataFrame`
+
+```python
+import shared_memory as shm
+layout = shm.DataFrameLayout(dtypes=[("a", "float32"), ("b", "int32")], index=["a", "b", "c"])
+frame = shm.create("frame", layout)
+
+# 读取创建的frame
+same_frame = shm.load("frame")
 ```
 
 ### 创建基于共享内存的`xarray.DataArray`
