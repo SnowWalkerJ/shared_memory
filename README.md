@@ -55,7 +55,7 @@ series = shm.create("series", layout)
 same_series = shm.load("series")
 ```
 
-### 创建一个基于共享内存的`pandas.DataFrame`
+### create a shared `pandas.DataFrame`
 
 ```python
 import shared_memory as shm
