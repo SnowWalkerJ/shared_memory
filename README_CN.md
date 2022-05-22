@@ -1,5 +1,7 @@
 # shared_memory
 
+[English](README.md)
+
 为Python封装的SharedMemory结构
 
 ## 解决痛点
@@ -10,6 +12,7 @@
   - pandas.Series
   - pandas.DataFrame
   - xarray.DataArray
+- 提供了易用的API供用户创建自己的基于共享内存的数据结构
 
 ## 警告
 

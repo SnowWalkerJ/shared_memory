@@ -1,5 +1,9 @@
 # shared_memory
 
+[中文](README_CN.md)
+
+A shared memory encapsulated for Python
+
 ## Why should I use it
 
 - The `multiprocessing.shared_memory.SharedMemory` carried by Python itself has the annoying behavior that it forces deleting the shared memory once the process that created (or opened) it exits, which is not always a wanted feature. So we make a SharedMemory that give you the flexibility to choose when you free the memory.
@@ -8,6 +12,7 @@
   - pandas.Series
   - pandas.DataFrame
   - xarray.DataArray
+- We offer a simple API for users to extend it and create more shared objects of their own
 
 ## Warning
 
