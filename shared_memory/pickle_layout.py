@@ -1,8 +1,7 @@
+import pickle
 import struct
 
 from .layout import Layout, align
-
-import pickle
 
 
 class PickleLayout(Layout):

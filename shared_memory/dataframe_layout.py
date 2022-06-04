@@ -1,4 +1,5 @@
-from typing import Any, Iterable, List, Tuple
+from numbers import Number
+from typing import Any, Sized, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -16,7 +17,7 @@ __all__ = ["DataFrameLayout"]
 class DataFrameLayout(StructLayout):
     sign = b"D"
 
-    def __init__(self, dtypes: List[Tuple[str, np.dtype]], index: Iterable[Any]):
+    def __init__(self, dtypes: List[Tuple[str, np.dtype]], index: Sized, init_value=None):
         meta = {"index": index, "columns": [col for (col, _) in dtypes], "blocks": {}}
         blocks = meta["blocks"]
         for idx, (name, dtype) in enumerate(dtypes):
@@ -29,12 +30,26 @@ class DataFrameLayout(StructLayout):
         for dtype, idxs in blocks.items():
             layouts[dtype.name] = NdArrayLayout(dtype, (len(idxs), len(index)))
         super().__init__(layouts)
+        self.init_value = init_value
 
     @classmethod
     def from_data(cls, df: pd.DataFrame):
         dtypes = list(df.dtypes.to_dict().items())
         index = df.index
-        return cls(dtypes, index)
+        return cls(dtypes, index, init_value=df)
+
+    def dump(self, mem: memoryview):
+        super().dump(mem)
+        if self.init_value is not None:
+            df = self.load(mem)
+            if isinstance(self.init_value, pd.DataFrame):
+                for col in self.init_value.columns:
+                    df.loc[:, col] = self.init_value[col]
+            elif isinstance(self.init_value, Number):
+                for col in df.columns:
+                    df.loc[:, col] = self.init_value
+            else:
+                raise TypeError
 
     @classmethod
     def load(cls, mem: memoryview) -> pd.DataFrame:

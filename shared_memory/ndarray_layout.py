@@ -11,9 +11,10 @@ import numpy as np
 class NdArrayLayout(Layout):
     sign = b"a"
 
-    def __init__(self, dtype: np.dtype, shape: Tuple[int, ...]):
+    def __init__(self, dtype: np.dtype, shape: Tuple[int, ...], init_value=None):
         self.dtype = np.dtype(dtype)
         self.shape = shape
+        self.init_value = init_value
 
     @align(8)
     def size(self) -> int:
@@ -25,6 +26,9 @@ class NdArrayLayout(Layout):
         format = "cci{size}i".format(size=len(self.shape))
         values = [self.sign, self.dtype.char.encode(), len(self.shape)] + list(self.shape)
         struct.pack_into(format, mem, 0, *values)
+        if self.init_value is not None:
+            array = self.load(mem)
+            array[:] = self.init_value
 
     @classmethod
     def load(cls, mem: memoryview):

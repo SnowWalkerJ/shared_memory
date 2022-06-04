@@ -1,4 +1,4 @@
-from .shared_memory import SharedMemory, unlink
+from .shared_memory import SharedMemory
 from .layout import Layout
 
 import struct
@@ -18,11 +18,11 @@ def create(name, layout: Layout):
 def load(name, layout: Optional[Type[Layout]]=None):
     shm = SharedMemory.open(name)
     mem = memoryview(shm)
-    return load_mem(mem, layout)
+    return load_mem(mem, layout)[0]
 
 
 def load_mem(mem: memoryview, layout: Optional[Type[Layout]]=None):
     if layout is None:
         sign = struct.unpack_from("c", mem, 0)[0]
         layout = Layout.get_layout_cls(sign)
-    return layout.load(mem)
+    return layout.load(mem), layout
