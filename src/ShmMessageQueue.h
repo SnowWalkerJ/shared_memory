@@ -1,10 +1,24 @@
 #ifndef SHM_ARRAY_SRC_SHMMESSAGEQUEUE_H_
 #define SHM_ARRAY_SRC_SHMMESSAGEQUEUE_H_
+#include <atomic>
 #include <cstring>
 #include <string>
 #include "SharedMemory.h"
 
 namespace shm_array {
+
+#if defined(__cpp_lib_hardware_interference_size) && !defined(__APPLE__)
+static constexpr size_t hardwareInterferenceSize =
+    std::hardware_destructive_interference_size;
+#else
+static constexpr size_t hardwareInterferenceSize = 64;
+#endif
+
+struct control {
+  long itemsize;
+  long count;
+  alignas(hardwareInterferenceSize) std::atomic_int64_t tail_id_;
+};
 
 class ShmMessageQueue {
  public:
@@ -18,17 +32,15 @@ class ShmMessageQueue {
   std::string Get();
   bool Empty();
  private:
-  long GetTailId() const { return *tail_id_; }
-  long GetCount() const { return count_; }
-  long GetItemSize() const { return *itemsize_; }
+  long GetTailId() const { return control_->tail_id_.load(); }
+  long GetCount() const { return control_->count; }
+  long GetItemSize() const { return control_->itemsize; }
   long GetHeadId();
   volatile char *GetBlock(long id);
   void IncHead() { ++head_id_; }
-  void IncTail() { ++(*tail_id_); }
-  volatile long *itemsize_;
-  long count_;
+  long GetAndIncTail() { return control_->tail_id_.fetch_add(1); }
   long safe_buffer_;
-  volatile long *tail_id_;
+  control *control_;
   volatile char *buffer_;
   long head_id_;
   SharedMemory shm_;

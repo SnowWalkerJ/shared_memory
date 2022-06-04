@@ -5,13 +5,10 @@
 #endif
 
 namespace shm_array {
-ShmMessageQueue::ShmMessageQueue(SharedMemory &&shm, long safe_buffer) : shm_(std::move(shm)) {
-  itemsize_ = static_cast<volatile long *>(shm_.Address());
-  count_ = *(itemsize_ + 1);
-  tail_id_ = itemsize_ + 2;
-  buffer_ = reinterpret_cast<volatile char *>(itemsize_ + 3);
+ShmMessageQueue::ShmMessageQueue(SharedMemory &&shm, long safe_buffer) : shm_(std::move(shm)), safe_buffer_(safe_buffer) {
+  control_ = static_cast<control *>(shm_.Address());
+  buffer_ = reinterpret_cast<volatile char *>(shm_.Address()) + sizeof(control);
   head_id_ = GetTailId() - 1;
-  safe_buffer_ = safe_buffer;
 }
 
 bool ShmMessageQueue::Empty() {
@@ -24,17 +21,16 @@ volatile char *ShmMessageQueue::GetBlock(long id) {
 }
 
 void ShmMessageQueue::Put(const std::string &data) {
-  auto block = GetBlock(GetTailId());
-  *reinterpret_cast<volatile long *>(block) = data.size();
+  auto block = GetBlock(GetAndIncTail());
+  *reinterpret_cast<volatile unsigned long *>(block) = data.size();
   std::copy(data.begin(), data.end(), block+sizeof(long));
-  IncTail();
 }
 
 std::string ShmMessageQueue::Get() {
   auto block = GetBlock(GetHeadId());
   IncHead();
-  long size = *reinterpret_cast<volatile long *>(block);
-  return std::string(const_cast<char *>(block+sizeof(long)), size);
+  unsigned long size = *reinterpret_cast<volatile unsigned long *>(block);
+  return {const_cast<char *>(block+sizeof(long)), size};
 }
 
 long ShmMessageQueue::GetHeadId() {

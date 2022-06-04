@@ -51,11 +51,11 @@ PYBIND11_MODULE(shared_memory, m) {
       .def("empty", &ShmMessageQueue::Empty)
       .def_property_readonly_static("create", [](const py::object &self) {
         return py::cpp_function([](const std::string &name, long itemsize, long count, long safe_buffer) {
-          auto shm = SharedMemory::Create(name, sizeof(long) * 3 + itemsize * count);
-          auto addr = static_cast<long *>(shm.Address());
-          addr[0] = itemsize;
-          addr[1] = count;
-          addr[2] = 0;
+          auto shm = SharedMemory::Create(name, sizeof(control) + itemsize * count);
+          auto ctrl = static_cast<control *>(shm.Address());
+          ctrl->count = count;
+          ctrl->itemsize = itemsize;
+          ctrl->tail_id_.store(0);
           return ShmMessageQueue(std::move(shm), safe_buffer);
         }, "name"_a, "itemsize"_a, "count"_a, "safe_buffer"_a=2l, py::return_value_policy::move);
       })
