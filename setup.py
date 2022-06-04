@@ -2,14 +2,13 @@ from glob import glob
 from setuptools import setup
 from pybind11.setup_helpers import Pybind11Extension
 
-extension = Pybind11Extension(
+shared_memory = Pybind11Extension(
     "shared_memory",
-    sorted(glob("src/*.cpp")),  # Sort source files for reproducibility
+    ["src/shared_memory.cpp", "src/SharedMemory.cpp", "src/ShmMessageQueue.cpp"],  # Sort source files for reproducibility
     cxx_std=14,
 )
-
 ext_modules = [
-    extension
+    shared_memory,
 ]
 
 setup(name="shared_memory",

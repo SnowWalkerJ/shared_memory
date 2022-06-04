@@ -52,7 +52,7 @@ class StructLayout(Layout):
             key_size, data_offset = struct.unpack_from("LL", mem, entry_offset)
             entry_offset += 16
             key = mem[entry_offset: entry_offset + key_size].tobytes().decode()
-            result[key] = load_mem(mem[data_offset:])
+            result[key], _ = load_mem(mem[data_offset:])
             entry_offset += align(8, key_size)
 
         return result
