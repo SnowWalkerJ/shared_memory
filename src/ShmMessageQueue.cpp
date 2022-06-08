@@ -47,4 +47,18 @@ long ShmMessageQueue::GetHeadId() {
   head_id_ = std::max(safe_front_bound, head_id_);
   return head_id_;
 }
+
+ShmMessageQueue ShmMessageQueue::Create(const std::string &name, long itemsize, long count, long safe_buffer) {
+    auto shm = SharedMemory::Create(name, sizeof(control) + itemsize * count);
+    auto ctrl = static_cast<control *>(shm.Address());
+    ctrl->count = count;
+    ctrl->itemsize = itemsize;
+    ctrl->tail_id_.store(0);
+    return ShmMessageQueue(std::move(shm), safe_buffer);
+}
+
+ShmMessageQueue ShmMessageQueue::Open(const std::string &name, long safe_buffer) {
+    auto shm = SharedMemory::Open(name, Permission::READWRITE);
+    return ShmMessageQueue(std::move(shm), safe_buffer);
+}
 } // shm_array

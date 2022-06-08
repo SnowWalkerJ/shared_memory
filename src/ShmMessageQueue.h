@@ -31,6 +31,8 @@ class ShmMessageQueue {
   void Put(const std::string &);
   std::string Get();
   bool Empty();
+  static ShmMessageQueue Create(const std::string &name, long itemsize, long count, long safe_buffer=2);
+  static ShmMessageQueue Open(const std::string &name, long safe_buffer=2);
  private:
   long GetTailId() const { return control_->tail_id_.load(); }
   long GetCount() const { return control_->count; }

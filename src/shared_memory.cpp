@@ -50,20 +50,10 @@ PYBIND11_MODULE(shared_memory, m) {
       })
       .def("empty", &ShmMessageQueue::Empty)
       .def_property_readonly_static("create", [](const py::object &self) {
-        return py::cpp_function([](const std::string &name, long itemsize, long count, long safe_buffer) {
-          auto shm = SharedMemory::Create(name, sizeof(control) + itemsize * count);
-          auto ctrl = static_cast<control *>(shm.Address());
-          ctrl->count = count;
-          ctrl->itemsize = itemsize;
-          ctrl->tail_id_.store(0);
-          return ShmMessageQueue(std::move(shm), safe_buffer);
-        }, "name"_a, "itemsize"_a, "count"_a, "safe_buffer"_a=2l, py::return_value_policy::move);
+        return py::cpp_function(&ShmMessageQueue::Create, "name"_a, "itemsize"_a, "count"_a, "safe_buffer"_a=2l, py::return_value_policy::move);
       })
       .def_property_readonly_static("open", [](const py::object &self) {
-        return py::cpp_function([](const std::string &name, long safe_buffer) {
-          auto shm = SharedMemory::Open(name, Permission::READWRITE);
-          return ShmMessageQueue(std::move(shm), safe_buffer);
-        }, "name"_a, "safe_buffer"_a=2l, py::return_value_policy::move);
+        return py::cpp_function(&ShmMessageQueue::Open, "name"_a, "safe_buffer"_a=2l, py::return_value_policy::move);
       })
   ;
 }
