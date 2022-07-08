@@ -4,10 +4,17 @@
 #define _unlikely(x) __builtin_expect((x), 1)
 #endif
 
+
+struct block_control {
+  std::atomic_flag ready;
+  std::atomic_uint64_t size;
+};
+
+
 namespace shm_array {
 ShmMessageQueue::ShmMessageQueue(SharedMemory &&shm, long safe_buffer) : shm_(std::move(shm)), safe_buffer_(safe_buffer) {
   control_ = static_cast<control *>(shm_.Address());
-  buffer_ = reinterpret_cast<volatile char *>(shm_.Address()) + sizeof(control);
+  buffer_ = reinterpret_cast<volatile char *>(shm_.Address()) + std::max(sizeof(control), hardwareInterferenceSize);
   head_id_ = GetTailId() - 1;
 }
 
@@ -22,15 +29,21 @@ volatile char *ShmMessageQueue::GetBlock(long id) {
 
 void ShmMessageQueue::Put(const std::string &data) {
   auto block = GetBlock(GetAndIncTail());
-  *reinterpret_cast<volatile unsigned long *>(block) = data.size();
-  std::copy(data.begin(), data.end(), block+sizeof(long));
+  block_control &bc = *reinterpret_cast<block_control *>(const_cast<char *>(block));
+  bc.ready.clear();
+  bc.size = data.size();
+  char *buffer = const_cast<char *>(block) + sizeof(block_control);
+  std::copy(data.begin(), data.end(), buffer);
+  bc.ready.test_and_set();
 }
 
 std::string ShmMessageQueue::Get() {
   auto block = GetBlock(GetHeadId());
   IncHead();
-  unsigned long size = *reinterpret_cast<volatile unsigned long *>(block);
-  return {const_cast<char *>(block+sizeof(long)), size};
+  block_control &bc = *reinterpret_cast<block_control *>(const_cast<char *>(block));
+  while (!bc.ready.test());
+  char *buffer = const_cast<char *>(block) + sizeof(block_control);
+  return {buffer, bc.size};
 }
 
 long ShmMessageQueue::GetHeadId() {

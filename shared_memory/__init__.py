@@ -19,4 +19,3 @@ try:
 except ImportError:
     pass
 from .util import *
-from .message_queue import MessageQueue
